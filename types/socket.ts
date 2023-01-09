@@ -15,10 +15,40 @@ export interface NextApiResponseWithSocket extends NextApiResponse {
   socket: SocketWithIO;
 }
 
-export interface Message {
-  user: string;
-  payload: {
-    message: string;
-  };
-  time: number;
+type EventTypes = "post" | "like" | "comment";
+export interface ISocket<
+  T extends EventTypes,
+  P extends Record<string, unknown>
+> {
+  type: T;
+  payload: P;
 }
+
+export type PostEvent = ISocket<
+  "post",
+  {
+    id: string;
+    user: string;
+    message: string;
+    time: number;
+  }
+>;
+
+export type LikeEvent = ISocket<
+  "like",
+  {
+    postId: string;
+  }
+>;
+
+export type CommentEvent = ISocket<
+  "comment",
+  {
+    postId: string;
+    user: string;
+    message: string;
+    time: number;
+  }
+>;
+
+export type SocketMessage = PostEvent | LikeEvent | CommentEvent;

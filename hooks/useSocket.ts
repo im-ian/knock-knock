@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import SocketIOClient from "socket.io-client";
 
-import { Message } from "../types/socket";
+import { SocketMessage } from "../types/socket";
 import { Socket } from "socket.io";
 
 interface UseSocketProps {
   onConnect?: () => void;
-  onMessage?: (message: Message) => void;
+  onMessage?: (message: SocketMessage) => void;
   onDisconnect?: () => void;
   onError?: (error: Error) => void;
 }

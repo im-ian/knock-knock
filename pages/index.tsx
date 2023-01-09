@@ -7,31 +7,44 @@ import {
   Loading,
   Text,
 } from "@nextui-org/react";
+import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 import useSocket from "../hooks/useSocket";
-import { Message } from "../types/socket";
-import { useState } from "react";
+import { PostEvent, SocketMessage } from "../types/socket";
 import useLocalStorage from "../hooks/useLocalStorage";
+import { TimeCircle } from "react-iconly";
 
 export default function Main() {
-  const [history, setHistory] = useState<Message[]>([]);
+  const [posts, setPosts] = useState<PostEvent[]>([]);
   const [nickname] = useLocalStorage("nickname", "익명");
+  const [uploadTimer, setUploadTimer] = useState<NodeJS.Timer>();
 
   const { isConnected, socket } = useSocket({
     onMessage: (message) => {
-      setHistory((prev) => [message, ...prev]);
+      if (message.type === "post") {
+        setPosts((prev) => [message, ...prev]);
+      }
     },
   });
 
   const handleSendMessage = (message: string) => {
     if (socket) {
       socket.send({
-        user: nickname,
+        type: "post",
         payload: {
+          id: uuidv4(),
+          user: nickname,
           message,
+          time: Date.now(),
         },
-        time: Date.now(),
-      } satisfies Message);
+      } satisfies SocketMessage);
+
+      setUploadTimer(
+        setTimeout(() => {
+          setUploadTimer(undefined);
+        }, 10000)
+      );
     }
   };
 
@@ -54,15 +67,30 @@ export default function Main() {
           css={{
             width: "100%",
           }}
-          onKeyDown={(e) => {
+          contentRight={uploadTimer ? <TimeCircle /> : undefined}
+          placeholder={
+            uploadTimer
+              ? "업로드 후 10초 동안은 업로드할 수 없어요."
+              : "이 곳에 입력해주세요."
+          }
+          onKeyUp={(e) => {
+            if (uploadTimer) return;
+
+            const value = e.currentTarget.value;
+            if (!value) return;
+
             if (e.key === "Enter") {
               handleSendMessage(e.currentTarget.value);
+              e.currentTarget.value = "";
+              e.currentTarget.blur();
             }
           }}
         />
       </div>
       <div style={{ flex: 1, padding: "1.5rem" }}>
-        {history.map(({ user, payload, time }) => {
+        {posts.map(({ payload }) => {
+          const { user, message, time } = payload;
+
           return (
             <Card
               key={time}

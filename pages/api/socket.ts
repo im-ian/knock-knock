@@ -1,7 +1,8 @@
 import { NextApiRequest } from "next";
 import { Server } from "socket.io";
+import { v4 as uuidv4 } from "uuid";
 
-import { Message, NextApiResponseWithSocket } from "../../types/socket";
+import { NextApiResponseWithSocket, SocketMessage } from "../../types/socket";
 
 export const config = {
   api: {
@@ -25,14 +26,16 @@ const api = async (_: NextApiRequest, res: NextApiResponseWithSocket) => {
       clients[socket.id] = socket.id;
 
       socket.emit("message", {
-        user: "admin",
+        type: "post",
         payload: {
+          id: uuidv4(),
+          user: "Admin",
           message: "Welcome to the chat!",
+          time: Date.now(),
         },
-        time: Date.now(),
-      } satisfies Message);
+      } satisfies SocketMessage);
 
-      socket.on("message", (message: Message) => {
+      socket.on("message", (message: SocketMessage) => {
         socket.broadcast.emit("message", message);
       });
 
