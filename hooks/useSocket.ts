@@ -2,38 +2,49 @@ import { useEffect, useRef, useState } from "react";
 import SocketIOClient from "socket.io-client";
 
 import { Message } from "../types/socket";
+import { Socket } from "socket.io";
 
 interface UseSocketProps {
   onConnect?: () => void;
   onMessage?: (message: Message) => void;
   onDisconnect?: () => void;
+  onError?: (error: Error) => void;
 }
 
-const useSocket = ({ onConnect, onMessage, onDisconnect }: UseSocketProps) => {
+const useSocket = ({
+  onConnect,
+  onMessage,
+  onDisconnect,
+  onError,
+}: UseSocketProps) => {
   const [connected, setConnected] = useState(false);
-  const socketId = useRef<string>();
+  const socketClient = useRef<Socket>();
 
   useEffect(() => {
-    const socket = SocketIOClient("ws://localhost:3000", {
+    if (connected || socketClient.current) return;
+
+    const client = SocketIOClient("http://localhost:3000", {
       path: "/api/socket",
     });
 
-    socket.on("connect", () => {
+    client.on("connect", () => {
       onConnect && onConnect();
-      socketId.current = socket.id;
+      socketClient.current = client as any;
       setConnected(true);
     });
 
-    socket.on("message", (message) => onMessage && onMessage(message));
+    client.on("test", () => client.emit("test"));
 
-    socket.on("disconnect", () => onDisconnect && onDisconnect());
+    client.on("message", (message) => onMessage && onMessage(message));
 
-    socket.on("error", (error) => console.log(error));
+    client.on("disconnect", () => onDisconnect && onDisconnect());
 
-    () => socket.disconnect();
-  }, [onConnect, onMessage, onDisconnect]);
+    client.on("error", (error: Error) => onError && onError(error));
 
-  return { isConnected: connected, socketId: socketId.current };
+    () => client.disconnect();
+  }, [connected, onConnect, onMessage, onDisconnect, onError]);
+
+  return { isConnected: connected, socket: socketClient.current };
 };
 
 export default useSocket;

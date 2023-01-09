@@ -17,5 +17,8 @@ export interface NextApiResponseWithSocket extends NextApiResponse {
 
 export interface Message {
   user: string;
-  payload: unknown;
+  payload: {
+    message: string;
+  };
+  time: number;
 }
