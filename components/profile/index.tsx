@@ -4,7 +4,7 @@ import { useRecoilState } from "recoil";
 
 import { userAtom } from "../../recoil/atoms/user";
 
-const SideNav = () => {
+const Profile = () => {
   const [user, setUser] = useRecoilState(userAtom);
 
   const [visibleNicknameModal, setVisibleNicknameModal] = useState(false);
@@ -79,4 +79,4 @@ const SideNav = () => {
   );
 };
 
-export default SideNav;
+export default Profile;
