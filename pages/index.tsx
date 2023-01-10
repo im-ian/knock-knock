@@ -144,7 +144,7 @@ export default function Main() {
         style={{
           position: "sticky",
           top: 0,
-          backgroundColor: "white",
+          backdropFilter: "blur(10px)",
           zIndex: 10,
         }}
       >
