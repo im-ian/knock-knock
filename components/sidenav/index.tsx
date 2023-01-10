@@ -10,12 +10,18 @@ const SideNav = () => {
   const [visibleNicknameModal, setVisibleNicknameModal] = useState(false);
   const [changeNickname, setChangeNickname] = useState(user.nickname);
 
+  const isValidNickname =
+    changeNickname.length >= 2 && changeNickname.length <= 10;
+
   const handleModalClose = () => {
     setVisibleNicknameModal(false);
   };
 
   const handleChangeNickname = () => {
-    if (changeNickname.length < 2) return;
+    if (!isValidNickname) {
+      setChangeNickname(user.nickname);
+      return;
+    }
 
     setUser({
       ...user,
@@ -46,8 +52,10 @@ const SideNav = () => {
           <Input
             bordered
             fullWidth
-            color={changeNickname.length < 2 ? "error" : "primary"}
-            helperText={"닉네임은 최소 2글자 이상으로 지정해야합니다."}
+            color={isValidNickname ? "primary" : "error"}
+            helperText={
+              "닉네임은 최소 2글자 이상, 10글자 이하로 지정해야합니다."
+            }
             size="lg"
             placeholder={user.nickname}
             onChange={(e) => {
