@@ -17,6 +17,7 @@ import { PostEvent, SocketMessage } from "../types/socket";
 import { useRecoilValue } from "recoil";
 import { userAtom } from "../recoil/atoms/user";
 import Head from "next/head";
+import Post from "../components/posts";
 
 export default function Main() {
   const isActiveRef = useRef(true);
@@ -154,48 +155,9 @@ export default function Main() {
           />
         </div>
         <div style={{ flex: 1, padding: "1.5rem" }}>
-          {posts.map(({ payload }) => {
-            const {
-              user: { nickname },
-              id,
-              message,
-              isRead,
-              time,
-            } = payload;
-
-            return (
-              <Card
-                key={id}
-                variant={isRead ? "bordered" : "flat"}
-                css={{ width: "100%", marginBottom: "1rem" }}
-              >
-                <Card.Header>
-                  <Avatar text={nickname} />
-                  <Grid.Container css={{ pl: "$6" }}>
-                    <Grid xs={12}>
-                      <Text h5 css={{ marginBottom: 0 }}>
-                        {nickname}
-                      </Text>
-                    </Grid>
-                    <Grid xs={12}>
-                      <Text css={{ color: "$accents8", fontSize: "0.8rem" }}>
-                        {new Date(time).toLocaleString()}
-                      </Text>
-                    </Grid>
-                  </Grid.Container>
-                </Card.Header>
-                <Card.Body
-                  css={{ paddingTop: "0.5rem", paddingBottom: "1.2rem" }}
-                >
-                  <Text>{message}</Text>
-                </Card.Body>
-                <Card.Divider />
-                <Card.Footer>
-                  <Badge>신규</Badge>
-                </Card.Footer>
-              </Card>
-            );
-          })}
+          {posts.map(({ payload }) => (
+            <Post key={payload.id} {...payload} />
+          ))}
         </div>
       </div>
     </>
