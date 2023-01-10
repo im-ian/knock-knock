@@ -10,3 +10,21 @@ body {
   max-height: 100vh;
   overflow-x: hidden;
 }
+
+.socket-contents {
+  opacity: 0;
+  transform: scale(0.9);
+  animation: scale-up 0.3s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes scale-up {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

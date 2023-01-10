@@ -12,6 +12,7 @@ import Head from "next/head";
 import Post from "../components/timeline/post";
 import Notice from "../components/timeline/notice";
 import Profile from "../components/profile";
+import { TimeCircle } from "react-iconly";
 
 export default function Main() {
   const isActiveRef = useRef(true);
@@ -22,7 +23,7 @@ export default function Main() {
 
   const user = useRecoilValue(userAtom);
 
-  // const [uploadTimer, setUploadTimer] = useState<NodeJS.Timer>();
+  const [uploadTimer, setUploadTimer] = useState<NodeJS.Timer>();
 
   const { isConnected, socket } = useSocket({
     onMessage: (message) => {
@@ -69,11 +70,11 @@ export default function Main() {
         },
       } satisfies SocketMessage);
 
-      // setUploadTimer(
-      //   setTimeout(() => {
-      //     setUploadTimer(undefined);
-      //   }, 3000)
-      // );
+      setUploadTimer(
+        setTimeout(() => {
+          setUploadTimer(undefined);
+        }, 500)
+      );
     }
   };
 
@@ -166,14 +167,14 @@ export default function Main() {
               }}
               onFocus={() => setIsFocusInput(true)}
               onBlur={() => setIsFocusInput(false)}
-              // contentRight={uploadTimer ? <TimeCircle /> : undefined}
-              // placeholder={
-              //   uploadTimer
-              //     ? "업로드 후 3초 동안은 업로드할 수 없어요."
-              //     : "이 곳에 입력해주세요."
-              // }
+              contentRight={uploadTimer ? <TimeCircle /> : undefined}
+              placeholder={
+                uploadTimer
+                  ? "도배 방지를 위해 잠시만 기다려주세요."
+                  : "이 곳에 입력해주세요."
+              }
               onKeyUp={(e) => {
-                // if (uploadTimer) return;
+                if (uploadTimer) return;
 
                 const value = e.currentTarget.value;
                 if (!value) return;
@@ -181,7 +182,6 @@ export default function Main() {
                 if (e.key === "Enter") {
                   handleSendMessage(e.currentTarget.value);
                   e.currentTarget.value = "";
-                  // e.currentTarget.blur();
                 }
               }}
             />
@@ -191,7 +191,11 @@ export default function Main() {
       <div style={{ padding: "1.5rem", overflowY: "scroll" }}>
         {timeline.map(({ type, payload }) => {
           return (
-            <div key={payload.id} style={{ marginBottom: "1rem" }}>
+            <div
+              key={payload.id}
+              className={"socket-contents"}
+              style={{ marginBottom: "1rem" }}
+            >
               {type === "post" && <Post {...payload} />}
               {type === "notice" && <Notice {...payload} />}
             </div>
