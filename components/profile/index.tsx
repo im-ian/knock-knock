@@ -4,7 +4,11 @@ import { useRecoilState } from "recoil";
 
 import { userAtom } from "../../recoil/atoms/user";
 
-const Profile = () => {
+interface ProfileProps {
+  onChangeNickname: (nickname: string) => void;
+}
+
+const Profile = ({ onChangeNickname }: ProfileProps) => {
   const [user, setUser] = useRecoilState(userAtom);
 
   const [visibleNicknameModal, setVisibleNicknameModal] = useState(false);
@@ -28,6 +32,7 @@ const Profile = () => {
       nickname: changeNickname,
     });
 
+    onChangeNickname(changeNickname);
     handleModalClose();
   };
 

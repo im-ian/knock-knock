@@ -47,6 +47,11 @@ export default function Main() {
       }
 
       if (message.type === "notice") {
+        if (timelineSet.current.has(message.payload.id)) return;
+
+        setTimeline((prev) => [message, ...prev]);
+        timelineSet.current.add(message.payload.id);
+        return;
       }
     },
   });
@@ -69,6 +74,20 @@ export default function Main() {
       //     setUploadTimer(undefined);
       //   }, 3000)
       // );
+    }
+  };
+
+  const handleChanageNickname = (nickname: string) => {
+    if (socket) {
+      socket.send({
+        type: "notice",
+        payload: {
+          id: uuidv4(),
+          icon: "system",
+          message: `${user.nickname}님이 ${nickname}으로 닉네임을 변경하였습니다.`,
+          time: Date.now(),
+        },
+      } satisfies SocketMessage);
     }
   };
 
@@ -136,7 +155,7 @@ export default function Main() {
         >
           {!isFocusInput && (
             <Grid xs={2}>
-              <Profile />
+              <Profile onChangeNickname={handleChanageNickname} />
             </Grid>
           )}
           <Grid xs={isFocusInput ? 12 : 10}>
