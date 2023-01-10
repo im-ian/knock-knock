@@ -23,7 +23,7 @@ const useSocket = ({
   useEffect(() => {
     if (connected || socketClient.current) return;
 
-    const client = SocketIOClient("http://localhost:3000", {
+    const client = SocketIOClient(process.env.HOST || "", {
       path: "/api/socket",
     });
 

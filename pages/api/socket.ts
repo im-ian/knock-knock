@@ -25,15 +25,15 @@ const api = async (_: NextApiRequest, res: NextApiResponseWithSocket) => {
 
       clients[socket.id] = socket.id;
 
-      socket.emit("message", {
-        type: "post",
-        payload: {
-          id: uuidv4(),
-          user: "Admin",
-          message: "Welcome to the chat!",
-          time: Date.now(),
-        },
-      } satisfies SocketMessage);
+      // socket.emit("message", {
+      //   type: "post",
+      //   payload: {
+      //     id: uuidv4(),
+      //     user: "Admin",
+      //     message: "Welcome to the my page!",
+      //     time: Date.now(),
+      //   },
+      // } satisfies SocketMessage);
 
       socket.on("message", (message: SocketMessage) => {
         socket.broadcast.emit("message", message);

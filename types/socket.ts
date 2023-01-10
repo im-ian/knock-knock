@@ -3,6 +3,8 @@ import type { NextApiResponse } from "next";
 import type { Socket as NetSocket } from "net";
 import type { Server as IOServer } from "socket.io";
 
+import { IUser } from "./user";
+
 interface SocketServer extends HTTPServer {
   io?: IOServer | undefined;
 }
@@ -16,6 +18,7 @@ export interface NextApiResponseWithSocket extends NextApiResponse {
 }
 
 type EventTypes = "post" | "like" | "comment";
+
 export interface ISocket<
   T extends EventTypes,
   P extends Record<string, unknown>
@@ -28,7 +31,7 @@ export type PostEvent = ISocket<
   "post",
   {
     id: string;
-    user: string;
+    user: IUser;
     message: string;
     time: number;
   }
@@ -37,6 +40,7 @@ export type PostEvent = ISocket<
 export type LikeEvent = ISocket<
   "like",
   {
+    user: IUser;
     postId: string;
   }
 >;
@@ -45,7 +49,7 @@ export type CommentEvent = ISocket<
   "comment",
   {
     postId: string;
-    user: string;
+    user: IUser;
     message: string;
     time: number;
   }

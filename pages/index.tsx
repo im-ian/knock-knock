@@ -7,23 +7,32 @@ import {
   Loading,
   Text,
 } from "@nextui-org/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { TimeCircle } from "react-iconly";
 import { v4 as uuidv4 } from "uuid";
 
 import useSocket from "../hooks/useSocket";
 import { PostEvent, SocketMessage } from "../types/socket";
-import useLocalStorage from "../hooks/useLocalStorage";
-import { TimeCircle } from "react-iconly";
+import { useRecoilValue } from "recoil";
+import { userAtom } from "../recoil/atoms/user";
 
-export default function Main() {
+export default function Main(props: any) {
   const [posts, setPosts] = useState<PostEvent[]>([]);
-  const [nickname] = useLocalStorage("nickname", "익명");
+  const postSet = useRef<Set<string>>(new Set());
+
+  const user = useRecoilValue(userAtom);
+
   const [uploadTimer, setUploadTimer] = useState<NodeJS.Timer>();
 
   const { isConnected, socket } = useSocket({
     onMessage: (message) => {
       if (message.type === "post") {
-        setPosts((prev) => [message, ...prev]);
+        if (postSet.current.has(message.payload.id)) return;
+
+        setPosts((prev) =>
+          [message, ...prev].sort((a, b) => b.payload.time - a.payload.time)
+        );
+        postSet.current.add(message.payload.id);
       }
     },
   });
@@ -34,7 +43,7 @@ export default function Main() {
         type: "post",
         payload: {
           id: uuidv4(),
-          user: nickname,
+          user,
           message,
           time: Date.now(),
         },
@@ -89,7 +98,11 @@ export default function Main() {
       </div>
       <div style={{ flex: 1, padding: "1.5rem" }}>
         {posts.map(({ payload }) => {
-          const { user, message, time } = payload;
+          const {
+            user: { nickname },
+            message,
+            time,
+          } = payload;
 
           return (
             <Card
@@ -98,11 +111,11 @@ export default function Main() {
               css={{ width: "100%", marginBottom: "1rem" }}
             >
               <Card.Header>
-                <Avatar text={user} />
+                <Avatar text={nickname} />
                 <Grid.Container css={{ pl: "$6" }}>
                   <Grid xs={12}>
                     <Text h5 css={{ marginBottom: 0 }}>
-                      {user}
+                      {nickname}
                     </Text>
                   </Grid>
                   <Grid xs={12}>
@@ -115,11 +128,11 @@ export default function Main() {
               <Card.Body
                 css={{ paddingTop: "0.5rem", paddingBottom: "1.2rem" }}
               >
-                <Text>{payload.message}</Text>
+                <Text>{message}</Text>
               </Card.Body>
               <Card.Divider />
               <Card.Footer>
-                <Badge>인기</Badge>
+                <Badge>신규</Badge>
               </Card.Footer>
             </Card>
           );
