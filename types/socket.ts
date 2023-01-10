@@ -33,6 +33,7 @@ export type PostEvent = ISocket<
     id: string;
     user: IUser;
     message: string;
+    isRead: boolean;
     time: number;
   }
 >;

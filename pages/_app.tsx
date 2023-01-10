@@ -9,7 +9,7 @@ function App({ Component, pageProps }: AppProps) {
   return (
     <NextUIProvider>
       <RecoilRoot>
-        <Grid.Container gap={2}>
+        <Grid.Container gap={2} css={{ height: "100vh" }}>
           <Grid xs={3}>
             <SideNav />
           </Grid>
