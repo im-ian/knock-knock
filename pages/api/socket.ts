@@ -1,7 +1,7 @@
 import { NextApiRequest } from "next";
 import { Server } from "socket.io";
-import { v4 as uuidv4 } from "uuid";
 
+import { defaultNickname } from "../../constants";
 import { NextApiResponseWithSocket, SocketMessage } from "../../types/socket";
 
 export const config = {
@@ -23,9 +23,17 @@ const api = async (_: NextApiRequest, res: NextApiResponseWithSocket) => {
     io.on("connection", (socket) => {
       console.log("✅ New connection:", socket.id);
 
-      clients[socket.id] = socket.id;
+      clients[socket.id] = defaultNickname;
 
       socket.on("message", (message: SocketMessage) => {
+        if (
+          message.type === "info" &&
+          message.payload.key === "change-nickname"
+        ) {
+          clients[message.payload.value.socketId] =
+            message.payload.value.nickname;
+        }
+
         socket.broadcast.emit("message", message);
       });
 

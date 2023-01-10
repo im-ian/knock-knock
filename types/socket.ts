@@ -17,7 +17,7 @@ export interface NextApiResponseWithSocket extends NextApiResponse {
   socket: SocketWithIO;
 }
 
-export type EventTypes = "notice" | "post" | "like" | "comment";
+export type EventTypes = "notice" | "info" | "post" | "like" | "comment";
 
 export type IconTypes = "notice" | "system" | "event";
 
@@ -38,6 +38,26 @@ export type NoticeEvent = ISocket<
     time: number;
   }
 >;
+
+export type IInfoEvent<
+  T extends {
+    key: string;
+    value: unknown;
+  }
+> = ISocket<"info", T>;
+
+export type ConnectedUsersInfoEvent = IInfoEvent<{
+  key: "connected-users";
+  value: Record<string, string>;
+}>;
+
+export type ChangeNicknameInfoEvent = IInfoEvent<{
+  key: "change-nickname";
+  value: {
+    socketId: string;
+    nickname: string;
+  };
+}>;
 
 export type PostEvent = ISocket<
   "post",
@@ -68,4 +88,10 @@ export type CommentEvent = ISocket<
   }
 >;
 
-export type SocketMessage = NoticeEvent | PostEvent | LikeEvent | CommentEvent;
+export type SocketMessage =
+  | NoticeEvent
+  | ConnectedUsersInfoEvent
+  | ChangeNicknameInfoEvent
+  | PostEvent
+  | LikeEvent
+  | CommentEvent;

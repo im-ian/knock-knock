@@ -1,6 +1,6 @@
-import { Grid, Input } from "@nextui-org/react";
+import { Avatar, Grid, Input } from "@nextui-org/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
+import { v4 } from "uuid";
 import update from "immutability-helper";
 
 import useSocket from "../hooks/useSocket";
@@ -22,10 +22,13 @@ export default function Main() {
   const [isFocusInput, setIsFocusInput] = useState(false);
 
   const user = useRecoilValue(userAtom);
+  const [connectedUsers, setConnectedUsers] = useState<string[]>([
+    user.nickname,
+  ]);
 
   const [uploadTimer, setUploadTimer] = useState<NodeJS.Timer>();
 
-  const { isConnected, socket } = useSocket({
+  const { socket } = useSocket({
     onMessage: (message) => {
       if (message.type === "post") {
         if (timelineSet.current.has(message.payload.id)) return;
@@ -54,6 +57,12 @@ export default function Main() {
         timelineSet.current.add(message.payload.id);
         return;
       }
+
+      if (message.type === "info") {
+        if (message.payload.key === "connected-users") {
+          setConnectedUsers(Object.values(message.payload.value));
+        }
+      }
     },
   });
 
@@ -62,7 +71,7 @@ export default function Main() {
       socket.send({
         type: "post",
         payload: {
-          id: uuidv4(),
+          id: v4(),
           user,
           message,
           isRead: false,
@@ -78,15 +87,26 @@ export default function Main() {
     }
   };
 
-  const handleChanageNickname = (nickname: string) => {
+  const handleChangeNickname = (nickname: string) => {
     if (socket) {
       socket.send({
         type: "notice",
         payload: {
-          id: uuidv4(),
+          id: v4(),
           icon: "system",
           message: `${user.nickname}님이 ${nickname}으로 닉네임을 변경하였습니다.`,
           time: Date.now(),
+        },
+      } satisfies SocketMessage);
+
+      socket.send({
+        type: "info",
+        payload: {
+          key: "change-nickname",
+          value: {
+            socketId: socket.id,
+            nickname,
+          },
         },
       } satisfies SocketMessage);
     }
@@ -156,7 +176,7 @@ export default function Main() {
         >
           {!isFocusInput && (
             <Grid xs={2}>
-              <Profile onChangeNickname={handleChanageNickname} />
+              <Profile onChangeNickname={handleChangeNickname} />
             </Grid>
           )}
           <Grid xs={isFocusInput ? 12 : 10}>
@@ -201,6 +221,30 @@ export default function Main() {
             </div>
           );
         })}
+      </div>
+      <div
+        style={{
+          position: "sticky",
+          bottom: 0,
+          backdropFilter: "blur(10px)",
+          zIndex: 10,
+        }}
+      >
+        <Grid.Container
+          gap={0}
+          css={{
+            padding: "1rem",
+          }}
+        >
+          <Grid xs={4}>
+            <Avatar.Group count={connectedUsers.length}>
+              {connectedUsers.map((name, index) => (
+                <Avatar key={index} text={name} stacked />
+              ))}
+            </Avatar.Group>
+          </Grid>
+          <Grid></Grid>
+        </Grid.Container>
       </div>
     </>
   );
