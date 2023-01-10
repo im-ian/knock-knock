@@ -1,28 +1,27 @@
-import {
-  Avatar,
-  Badge,
-  Card,
-  Grid,
-  Input,
-  Loading,
-  Text,
-} from "@nextui-org/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Input } from "@nextui-org/react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { TimeCircle } from "react-iconly";
 import { v4 as uuidv4 } from "uuid";
 import update from "immutability-helper";
 
 import useSocket from "../hooks/useSocket";
-import { PostEvent, SocketMessage } from "../types/socket";
+import {
+  EventTypes,
+  NoticeEvent,
+  PostEvent,
+  SocketMessage,
+} from "../types/socket";
 import { useRecoilValue } from "recoil";
 import { userAtom } from "../recoil/atoms/user";
 import Head from "next/head";
-import Post from "../components/posts";
+
+import Post from "../components/timeline/post";
+import Notice from "../components/timeline/notice";
 
 export default function Main() {
   const isActiveRef = useRef(true);
-  const [posts, setPosts] = useState<PostEvent[]>([]);
-  const postSet = useRef<Set<string>>(new Set());
+  const [timeline, setTimeline] = useState<(PostEvent | NoticeEvent)[]>([]);
+  const timelineSet = useRef<Set<string>>(new Set());
 
   const user = useRecoilValue(userAtom);
 
@@ -31,9 +30,9 @@ export default function Main() {
   const { isConnected, socket } = useSocket({
     onMessage: (message) => {
       if (message.type === "post") {
-        if (postSet.current.has(message.payload.id)) return;
+        if (timelineSet.current.has(message.payload.id)) return;
 
-        setPosts((prev) =>
+        setTimeline((prev) =>
           [
             update(message, {
               payload: {
@@ -45,7 +44,12 @@ export default function Main() {
             ...prev,
           ].sort((a, b) => b.payload.time - a.payload.time)
         );
-        postSet.current.add(message.payload.id);
+
+        timelineSet.current.add(message.payload.id);
+        return;
+      }
+
+      if (message.type === "notice") {
       }
     },
   });
@@ -81,9 +85,10 @@ export default function Main() {
     const handleFocus = () => {
       isActiveRef.current = true;
 
-      setPosts((prev) =>
+      setTimeline((prev) =>
         prev.map((post) => {
-          if (post.payload.isRead) return post;
+          if (post.type !== "post" || post.payload.isRead) return post;
+
           return update(post, {
             payload: {
               isRead: {
@@ -104,8 +109,10 @@ export default function Main() {
   }, []);
 
   const unreadCount = useMemo(() => {
-    return posts.filter((post) => !post.payload.isRead).length;
-  }, [posts]);
+    return timeline.filter(
+      (post) => post.type === "post" && !post.payload.isRead
+    ).length;
+  }, [timeline]);
 
   return (
     <>
@@ -155,9 +162,14 @@ export default function Main() {
           />
         </div>
         <div style={{ flex: 1, padding: "1.5rem" }}>
-          {posts.map(({ payload }) => (
-            <Post key={payload.id} {...payload} />
-          ))}
+          {timeline.map(({ type, payload }) => {
+            return (
+              <div key={payload.id} style={{ marginBottom: "1rem" }}>
+                {type === "post" && <Post {...payload} />}
+                {type === "notice" && <Notice {...payload} />}
+              </div>
+            );
+          })}
         </div>
       </div>
     </>

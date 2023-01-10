@@ -1,9 +1,10 @@
-import { Avatar, Grid, NextUIProvider } from "@nextui-org/react";
+import { Grid, NextUIProvider } from "@nextui-org/react";
 import type { AppProps } from "next/app";
 import { RecoilRoot } from "recoil";
 
-import "../styles/globals.css";
 import SideNav from "../components/sidenav";
+
+import "../styles/globals.css";
 
 function App({ Component, pageProps }: AppProps) {
   return (

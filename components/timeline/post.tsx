@@ -11,10 +11,7 @@ interface PostProps {
 
 const Post = ({ isRead, user: { nickname }, message, time }: PostProps) => {
   return (
-    <Card
-      variant={isRead ? "bordered" : "flat"}
-      css={{ width: "100%", marginBottom: "1rem" }}
-    >
+    <Card variant={isRead ? "bordered" : "flat"} css={{ width: "100%" }}>
       <Card.Header>
         <Avatar text={nickname} />
         <Grid.Container css={{ pl: "$6" }}>
