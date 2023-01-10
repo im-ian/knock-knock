@@ -54,7 +54,9 @@ const SideNav = () => {
             fullWidth
             color={isValidNickname ? "primary" : "error"}
             helperText={
-              "닉네임은 최소 2글자 이상, 10글자 이하로 지정해야합니다."
+              !isValidNickname
+                ? "닉네임은 최소 2글자 이상, 10글자 이하로 지정해야합니다."
+                : ""
             }
             size="lg"
             placeholder={user.nickname}
@@ -64,7 +66,11 @@ const SideNav = () => {
           />
         </Modal.Body>
         <Modal.Footer>
-          <Button auto onPress={handleChangeNickname}>
+          <Button
+            auto
+            disabled={!isValidNickname}
+            onPress={handleChangeNickname}
+          >
             저장
           </Button>
         </Modal.Footer>
