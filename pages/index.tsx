@@ -18,7 +18,6 @@ export default function Main() {
   const isActiveRef = useRef(true);
   const [timeline, setTimeline] = useState<(PostEvent | NoticeEvent)[]>([]);
   const timelineSet = useRef<Set<string>>(new Set());
-
   const [isFocusInput, setIsFocusInput] = useState(false);
 
   const user = useRecoilValue(userAtom);
@@ -33,27 +32,29 @@ export default function Main() {
       if (message.type === "post") {
         if (timelineSet.current.has(message.payload.id)) return;
 
-        setTimeline((prev) =>
-          [
-            update(message, {
-              payload: {
-                isRead: {
-                  $set: isActiveRef.current,
-                },
+        setTimeline((prev) => [
+          ...prev,
+          update(message, {
+            payload: {
+              isRead: {
+                $set: isActiveRef.current,
               },
-            }),
-            ...prev,
-          ].sort((a, b) => b.payload.time - a.payload.time)
-        );
+            },
+          }),
+        ]);
 
         timelineSet.current.add(message.payload.id);
+
+        setTimeout(() => {
+          document.body.scrollTop = document.body.scrollHeight;
+        }, 100);
         return;
       }
 
       if (message.type === "notice") {
         if (timelineSet.current.has(message.payload.id)) return;
 
-        setTimeline((prev) => [message, ...prev]);
+        setTimeline((prev) => [...prev, message]);
         timelineSet.current.add(message.payload.id);
         return;
       }
@@ -174,6 +175,44 @@ export default function Main() {
             padding: "1rem",
           }}
         >
+          <Grid xs={4}>
+            <Avatar.Group count={connectedUsers.length}>
+              {connectedUsers.map((name, index) => (
+                <Avatar key={index} text={name} stacked />
+              ))}
+            </Avatar.Group>
+          </Grid>
+          <Grid></Grid>
+        </Grid.Container>
+      </div>
+      <div style={{ padding: "1.5rem", overflowY: "scroll" }}>
+        {timeline.map(({ type, payload }) => {
+          return (
+            <div
+              key={payload.id}
+              className={"socket-contents"}
+              style={{ marginBottom: "1rem" }}
+            >
+              {type === "post" && <Post {...payload} />}
+              {type === "notice" && <Notice {...payload} />}
+            </div>
+          );
+        })}
+      </div>
+      <div
+        style={{
+          position: "sticky",
+          bottom: 0,
+          backdropFilter: "blur(10px)",
+          zIndex: 10,
+        }}
+      >
+        <Grid.Container
+          gap={0}
+          css={{
+            padding: "1rem",
+          }}
+        >
           {!isFocusInput && (
             <Grid xs={2}>
               <Profile onChangeNickname={handleChangeNickname} />
@@ -206,44 +245,6 @@ export default function Main() {
               }}
             />
           </Grid>
-        </Grid.Container>
-      </div>
-      <div style={{ padding: "1.5rem", overflowY: "scroll" }}>
-        {timeline.map(({ type, payload }) => {
-          return (
-            <div
-              key={payload.id}
-              className={"socket-contents"}
-              style={{ marginBottom: "1rem" }}
-            >
-              {type === "post" && <Post {...payload} />}
-              {type === "notice" && <Notice {...payload} />}
-            </div>
-          );
-        })}
-      </div>
-      <div
-        style={{
-          position: "sticky",
-          bottom: 0,
-          backdropFilter: "blur(10px)",
-          zIndex: 10,
-        }}
-      >
-        <Grid.Container
-          gap={0}
-          css={{
-            padding: "1rem",
-          }}
-        >
-          <Grid xs={4}>
-            <Avatar.Group count={connectedUsers.length}>
-              {connectedUsers.map((name, index) => (
-                <Avatar key={index} text={name} stacked />
-              ))}
-            </Avatar.Group>
-          </Grid>
-          <Grid></Grid>
         </Grid.Container>
       </div>
     </>

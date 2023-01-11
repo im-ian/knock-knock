@@ -68,6 +68,11 @@ const Profile = ({ onChangeNickname }: ProfileProps) => {
             onChange={(e) => {
               setChangeNickname(e.target.value);
             }}
+            onKeyUp={(e) => {
+              if (e.key === "Enter") {
+                isValidNickname && handleChangeNickname();
+              }
+            }}
           />
         </Modal.Body>
         <Modal.Footer>
